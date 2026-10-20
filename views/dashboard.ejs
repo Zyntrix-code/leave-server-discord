@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Leave</title>
+    <meta name="description" content="Server Leave - Select and leave Discord servers in bulk safely with rate-limit protection.">
+    <meta name="theme-color" content="#000000">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+    </noscript>
+    <style>
+        :root {
+            --bg-page: #000000;
+            --bg-surface: #0A0A0A;
+            --bg-surface-elevated: #111111;
+            --bg-surface-hover: #171717;
+            --border-subtle: #1C1C1C;
+            --border-medium: #2A2A2A;
+            --border-highlight: #404040;
+            --text-primary: #FFFFFF;
+            --text-secondary: #D4D4D4;
+            --text-muted: #8E8E8E;
+            --danger-color: #EF4444;
+            --danger-hover: #DC2626;
+            --danger-glow: rgba(239, 68, 68, 0.35);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 28px 16px 120px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: -150px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 300px;
+            background: radial-gradient(ellipse, rgba(255, 255, 255, 0.03) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #000000;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #222222;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #333333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            padding: 28px;
+            border-radius: 18px;
+            margin-bottom: 20px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.85);
+            transition: border-color 0.3s;
+        }
+
+        header:hover {
+            border-color: var(--border-medium);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .brand-title {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .stats-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #111111;
+            border: 1px solid var(--border-subtle);
+            padding: 7px 16px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .stats-badge .counter {
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+        }
+
+        .search-wrapper {
+            position: relative;
+            margin-top: 10px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 14px 18px 14px 48px;
+            background: #000000;
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 15px;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.25s ease;
+        }
+
+        .search-box::placeholder {
+            color: var(--text-muted);
+        }
+
+        .search-box:focus {
+            background: #050505;
+            border-color: #555555;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
+        }
+
+        .toolbar {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            padding: 14px 20px;
+            border-radius: 14px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .toolbar-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn-action {
+            background: #141414;
+            border: 1px solid var(--border-medium);
+            color: var(--text-primary);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-action:hover {
+            background: #202020;
+            border-color: var(--border-highlight);
+            transform: translateY(-1px);
+        }
+
+        .selection-status {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .selection-status span {
+            color: #FFFFFF;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+        }
+
+        #server-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 14px;
+        }
+
+        .server-card {
+            display: flex;
+            align-items: center;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            padding: 14px 18px;
+            border-radius: 14px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            min-width: 0;
+        }
+
+        .server-card:hover {
+            background: var(--bg-surface-hover);
+            border-color: var(--border-highlight);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
+        }
+
+        .server-card.selected {
+            background: #121212;
+            border-color: #666666;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+        }
+
+        .server-card.hidden {
+            display: none;
+        }
+
+        .checkbox-container {
+            position: relative;
+            margin-right: 16px;
+            display: flex;
+            align-items: center;
+        }
+
+        input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            background: #000000;
+            border: 2px solid var(--border-medium);
+            border-radius: 6px;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s ease;
+            display: grid;
+            place-content: center;
+        }
+
+        input[type="checkbox"]:hover {
+            border-color: #888888;
+        }
+
+        input[type="checkbox"]::before {
+            content: "";
+            width: 10px;
+            height: 6px;
+            border-left: 2px solid #000000;
+            border-bottom: 2px solid #000000;
+            transform: rotate(-45deg) scale(0);
+            transition: 0.15s transform ease-in-out;
+            margin-top: -2px;
+        }
+
+        input[type="checkbox"]:checked {
+            background: #FFFFFF;
+            border-color: #FFFFFF;
+        }
+
+        input[type="checkbox"]:checked::before {
+            transform: rotate(-45deg) scale(1);
+        }
+
+        .server-icon {
+            border-radius: 50%;
+            width: 46px;
+            height: 46px;
+            margin-right: 16px;
+            background: #141414;
+            border: 1px solid var(--border-subtle);
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .server-info {
+            flex-grow: 1;
+            min-width: 0;
+            text-align: left;
+        }
+
+        .server-name {
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .server-title-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .owner-badge {
+            font-size: 10px;
+            font-weight: 700;
+            color: #FBBF24;
+            background: rgba(251, 191, 36, 0.12);
+            border: 1px solid rgba(251, 191, 36, 0.35);
+            padding: 2px 7px;
+            border-radius: 5px;
+            flex-shrink: 0;
+            line-height: 1.4;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .server-id {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            margin-top: 2px;
+        }
+
+        .empty-state {
+            display: none;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 14px;
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .empty-state.visible {
+            display: block;
+        }
+
+        .footer-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--danger-color);
+            color: #FFFFFF;
+            padding: 16px 36px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 35px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 800;
+            font-size: 15px;
+            box-shadow: 0 10px 30px var(--danger-glow);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 100;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .footer-btn:hover {
+            background: var(--danger-hover);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(239, 68, 68, 0.5);
+        }
+
+        .footer-btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-badge {
+            background: rgba(0, 0, 0, 0.35);
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        #loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.88);
+            z-index: 1000;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .modal-box {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-medium);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.95);
+            max-width: 440px;
+            margin: 20px;
+        }
+
+        .spinner {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 24px;
+            border: 4px solid #1a1a1a;
+            border-top: 4px solid var(--danger-color);
+            border-right: 4px solid #FFFFFF;
+            border-radius: 50%;
+            animation: spin 0.9s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            animation: modalFadeIn 0.2s ease-out;
+        }
+
+        .modal-backdrop.active {
+            display: flex;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-medium);
+            padding: 34px 28px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.95);
+            max-width: 420px;
+            width: 100%;
+            animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        @keyframes modalPop {
+            from { opacity: 0; transform: scale(0.92) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-icon-wrap {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            transition: transform 0.2s ease;
+        }
+
+        .modal-icon-wrap.danger {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.2);
+        }
+
+        .modal-icon-wrap.warning {
+            background: rgba(234, 179, 8, 0.1);
+            border: 1px solid rgba(234, 179, 8, 0.4);
+            box-shadow: 0 0 30px rgba(234, 179, 8, 0.2);
+        }
+
+        .modal-svg {
+            display: block;
+            margin: auto;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #FFFFFF;
+            margin-bottom: 10px;
+        }
+
+        .modal-desc {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .modal-subdesc {
+            display: block;
+            margin-top: 6px;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        .highlight-count {
+            color: var(--danger-color);
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 1px 6px;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 6px;
+            border: 1px solid rgba(239, 68, 68, 0.25);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .btn-modal-cancel {
+            flex: 1;
+            background: #141414;
+            border: 1px solid var(--border-medium);
+            color: var(--text-primary);
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-modal-cancel:hover {
+            background: #202020;
+            border-color: var(--border-highlight);
+            transform: translateY(-1px);
+        }
+
+        .btn-modal-confirm {
+            flex: 1.2;
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #FFFFFF;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: inherit;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 18px rgba(239, 68, 68, 0.35);
+            transition: all 0.2s ease;
+        }
+
+        .btn-modal-confirm:hover {
+            background: linear-gradient(135deg, #F87171 0%, #EF4444 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.5);
+        }
+
+        .btn-modal-confirm.normal {
+            background: #FFFFFF;
+            color: #000000;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-modal-confirm.normal:hover {
+            background: #E5E5E5;
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.25);
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 18px 12px 110px;
+            }
+            header {
+                padding: 20px;
+            }
+            .header-top {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .toolbar-actions {
+                justify-content: space-between;
+            }
+            #server-list {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .footer-btn {
+                bottom: 20px;
+                right: 20px;
+                left: 20px;
+                text-align: center;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Custom Confirmation Modal -->
+    <div id="confirm-modal" class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-icon-wrap danger">
+                <svg class="modal-svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+            </div>
+            <h3 class="modal-title">Confirm Server Leave</h3>
+            <p class="modal-desc">
+                Are you sure you want to leave <span id="confirm-count" class="highlight-count">0</span> server(s)?<br>
+                <span class="modal-subdesc">This action cannot be undone.</span>
+            </p>
+            <div class="modal-actions">
+                <button type="button" class="btn-modal-cancel" id="btn-cancel-leave">Cancel</button>
+                <button type="button" class="btn-modal-confirm" id="btn-confirm-leave">Confirm Leave</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Warning Modal (0 servers selected) -->
+    <div id="warning-modal" class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-icon-wrap warning">
+                <svg class="modal-svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#EAB308" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+            </div>
+            <h3 class="modal-title">No Servers Selected</h3>
+            <p class="modal-desc">
+                Please select at least one server from the list to proceed with leaving.
+            </p>
+            <div class="modal-actions">
+                <button type="button" class="btn-modal-confirm normal" id="btn-close-warning">Got it</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="modal-box">
+            <div class="spinner"></div>
+            <h3 style="color: #FFFFFF; font-size: 19px; margin-bottom: 10px;">Leaving Selected Servers...</h3>
+            <p style="color: var(--text-secondary); font-size: 14px; line-height: 1.6;">
+                Please wait while requests are dispatched steadily with rate-limit protection.
+            </p>
+        </div>
+    </div>
+
+    <main class="container">
+        <header>
+            <div class="header-top">
+                <div class="brand-title">
+                    <div>
+                        <h1>Server Leave</h1>
+                        <p style="color: var(--text-secondary); font-size: 13px; margin-top: 2px;">Manage and leave joined servers in bulk</p>
+                    </div>
+                </div>
+                <div class="stats-badge">
+                    <span>Total Servers:</span>
+                    <span class="counter" id="total-count"><%= total %></span>
+                </div>
+            </div>
+
+            <div class="search-wrapper">
+                <span class="search-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </span>
+                <input type="text" id="search" class="search-box" placeholder="Search by server name or ID..." autocomplete="off">
+            </div>
+        </header>
+
+        <div class="toolbar">
+            <div class="toolbar-actions">
+                <button type="button" class="btn-action" id="btn-select-all">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    Select All
+                </button>
+                <button type="button" class="btn-action" id="btn-deselect-all">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                    Deselect All
+                </button>
+            </div>
+            <div class="selection-status">
+                Selected: <span id="selected-count">0</span> servers
+            </div>
+        </div>
+
+        <form id="leave-form" action="/leave-servers" method="POST">
+            <div id="server-list">
+                <% guilds.forEach(guild => { %>
+                    <label class="server-card" data-name="<%= guild.name.toLowerCase() %>" data-id="<%= guild.id %>">
+                        <div class="checkbox-container">
+                            <input type="checkbox" name="serverIds" value="<%= guild.id %>">
+                        </div>
+                        <img class="server-icon" src="<%= guild.icon %>" alt="icon" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                        <div class="server-info">
+                            <div class="server-name">
+                                <span class="server-title-text"><%= guild.name %></span>
+                                <% if (guild.isOwner) { %>
+                                    <span class="owner-badge" title="You are the Owner of this server">
+                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M2 19h20v2H2zM2 5l5 7 5-7 5 7 5-7v11H2z"/>
+                                        </svg>
+                                        Owner
+                                    </span>
+                                <% } %>
+                            </div>
+                            <div class="server-id">ID: <%= guild.id %></div>
+                        </div>
+                    </label>
+                <% }) %>
+            </div>
+
+            <div id="empty-state" class="empty-state">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 10px; display: block;">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <p style="font-size: 16px; font-weight: 700; color: #FFFFFF;">No servers found</p>
+                <p style="font-size: 13px; margin-top: 6px; color: var(--text-muted);">Try searching with another keyword or ID</p>
+            </div>
+
+            <button type="submit" class="footer-btn" id="submit-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                <span>Leave Selected Servers</span>
+                <span class="btn-badge" id="btn-count">0</span>
+            </button>
+        </form>
+    </main>
+
+    <script>
+const _0x8a48=_0x38ef;(function(_0x288f7c,_0x24415c){const _0x2d2eb7=_0x38ef,_0xcabdc1=_0x288f7c();while(!![]){try{const _0x18974f=-parseInt(_0x2d2eb7(0x18b))/(-0x1079*0x1+0x1*-0x2703+0x377d)*(parseInt(_0x2d2eb7(0x15c))/(0x8a1+-0x26c9*-0x1+-0x2f68*0x1))+-parseInt(_0x2d2eb7(0x175))/(0x409*0x4+-0x9*-0x276+-0x29*0xef)*(parseInt(_0x2d2eb7(0x16b))/(-0xfd6+-0x9*-0x1e7+-0x145))+parseInt(_0x2d2eb7(0x183))/(0x59+-0x112*0x1+0x13*0xa)+parseInt(_0x2d2eb7(0x14c))/(-0x1*-0x23d5+-0x5*0x5b4+-0x74b)*(-parseInt(_0x2d2eb7(0x167))/(0xdac+0x1*0x23f2+-0x3197))+parseInt(_0x2d2eb7(0x18d))/(-0xb56+-0x2589+-0x6b*-0x75)*(-parseInt(_0x2d2eb7(0x168))/(-0x4*0x9+0x65*0xd+-0x4f4))+-parseInt(_0x2d2eb7(0x160))/(0x4*-0x6be+-0x1050+0x5*0x8aa)+parseInt(_0x2d2eb7(0x17f))/(0x3*0x509+0x1997*0x1+-0x1*0x28a7);if(_0x18974f===_0x24415c)break;else _0xcabdc1['push'](_0xcabdc1['shift']());}catch(_0xae17c){_0xcabdc1['push'](_0xcabdc1['shift']());}}}(_0x2204,-0x5f5*-0x15a+0x276e*0x3b+-0xa71b8));const searchInput=document['getElementById'](_0x8a48(0x16e)),cards=document[_0x8a48(0x172)](_0x8a48(0x174)),emptyState=document['getElementById']('empty-state'),selectedCountSpan=document[_0x8a48(0x14e)](_0x8a48(0x153)),btnCount=document[_0x8a48(0x14e)](_0x8a48(0x176)),selectAllBtn=document[_0x8a48(0x14e)](_0x8a48(0x182)),deselectAllBtn=document[_0x8a48(0x14e)]('btn-deselect-all'),checkboxes=document[_0x8a48(0x172)](_0x8a48(0x17b)),form=document[_0x8a48(0x14e)](_0x8a48(0x16c)),overlay=document[_0x8a48(0x14e)](_0x8a48(0x184));function _0x38ef(_0x3e0fdd,_0x54927c){_0x3e0fdd=_0x3e0fdd-(-0xff+0x139f*0x1+-0x1154);const _0xf2e847=_0x2204();let _0x249295=_0xf2e847[_0x3e0fdd];if(_0x38ef['kJrECt']===undefined){var _0x5a89cb=function(_0x82e083){const _0x5b15d8='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let _0x2d1304='',_0x15fb17='';for(let _0x13ee12=0x184b+-0x1a61*0x1+0x216,_0x40b7af,_0x2aa81c,_0x4fa742=-0x4ff*0x4+0x4cb+0xf31;_0x2aa81c=_0x82e083['charAt'](_0x4fa742++);~_0x2aa81c&&(_0x40b7af=_0x13ee12%(-0x242e+0x5*-0x717+0x1*0x47a5)?_0x40b7af*(0x4f*-0x26+-0x2155+0x2d4f)+_0x2aa81c:_0x2aa81c,_0x13ee12++%(0x23b3+-0x2*-0x1375+-0x4a99))?_0x2d1304+=String['fromCharCode'](0x2265+-0x15cb+-0xb9b*0x1&_0x40b7af>>(-(-0xd*0x10d+0x1f85+-0x11da)*_0x13ee12&-0x1*-0x805+0x1b*-0x65+0x2a8*0x1)):0x1f07+0x1853+0xda*-0x41){_0x2aa81c=_0x5b15d8['indexOf'](_0x2aa81c);}for(let _0x5dfd61=-0x20d7+0x1*0x1ecd+0x1d*0x12,_0x27c87a=_0x2d1304['length'];_0x5dfd61<_0x27c87a;_0x5dfd61++){_0x15fb17+='%'+('00'+_0x2d1304['charCodeAt'](_0x5dfd61)['toString'](0x98*-0x31+0x2*-0x10b8+0x3e98))['slice'](-(0xe*0x14a+-0x1e52*0x1+0xc48));}return decodeURIComponent(_0x15fb17);};_0x38ef['KctrdB']=_0x5a89cb,_0x38ef['cGRIWs']={},_0x38ef['kJrECt']=!![];}const _0x5115f6=_0xf2e847[-0x5d*0x15+-0x7*-0x125+-0x62];_0x38ef['wcXyvG']!==_0x5115f6&&(_0x38ef['cGRIWs']={},_0x38ef['wcXyvG']=_0x5115f6);const _0x1fb6b3=_0x38ef['cGRIWs'][_0x3e0fdd];return _0x1fb6b3===undefined?(_0x249295=_0x38ef['KctrdB'](_0x249295),_0x38ef['cGRIWs'][_0x3e0fdd]=_0x249295):_0x249295=_0x1fb6b3,_0x249295;}function updateSelectedCount(){const _0x4e54c1=_0x8a48,_0x1f3a87={'sdBPr':_0x4e54c1(0x17c)};let _0x506835=0xce4+-0x1*-0x12f9+-0x1fdd*0x1;checkboxes[_0x4e54c1(0x150)](_0x19acee=>{const _0x5e4351=_0x4e54c1,_0x4f426=_0x19acee['closest'](_0x5e4351(0x174));_0x19acee[_0x5e4351(0x189)]?(_0x506835++,_0x4f426[_0x5e4351(0x18e)][_0x5e4351(0x16d)](_0x1f3a87[_0x5e4351(0x151)])):_0x4f426[_0x5e4351(0x18e)][_0x5e4351(0x187)](_0x5e4351(0x17c));}),selectedCountSpan[_0x4e54c1(0x161)]=_0x506835,btnCount[_0x4e54c1(0x161)]=_0x506835;}checkboxes[_0x8a48(0x150)](_0x200720=>{const _0x111b21=_0x8a48,_0xcf0b1f={'RsetF':_0x111b21(0x185)};_0x200720[_0x111b21(0x18a)](_0xcf0b1f[_0x111b21(0x15a)],updateSelectedCount);}),searchInput[_0x8a48(0x18a)](_0x8a48(0x17a),_0x5ce031=>{const _0x226250=_0x8a48,_0xaf20f7={'ONgdV':_0x226250(0x18c),'FVcju':_0x226250(0x169),'JxRZv':_0x226250(0x154)},_0x3f08f1=_0x5ce031[_0x226250(0x166)]['value']['toLowerCase']()[_0x226250(0x157)]();let _0x3cbd9a=0x1*0x9a9+-0xc6*0x12+0x443*0x1;cards[_0x226250(0x150)](_0x2ae498=>{const _0x1a79e9=_0x226250,_0x4a1333=_0x2ae498[_0x1a79e9(0x162)]('data-name')||'',_0x35cc4e=_0x2ae498[_0x1a79e9(0x162)](_0xaf20f7[_0x1a79e9(0x159)])||'';_0x4a1333[_0x1a79e9(0x186)](_0x3f08f1)||_0x35cc4e[_0x1a79e9(0x186)](_0x3f08f1)?(_0x2ae498[_0x1a79e9(0x18e)][_0x1a79e9(0x187)](_0xaf20f7[_0x1a79e9(0x177)]),_0x3cbd9a++):_0x2ae498['classList']['add'](_0xaf20f7[_0x1a79e9(0x177)]);}),_0x3cbd9a===-0x6*0x277+-0x3*-0xb35+-0x12d5?emptyState[_0x226250(0x18e)]['add']('visible'):emptyState[_0x226250(0x18e)][_0x226250(0x187)](_0xaf20f7['JxRZv']);}),selectAllBtn['addEventListener'](_0x8a48(0x180),()=>{const _0x4d319f=_0x8a48,_0x3e85a1={'EuKYx':_0x4d319f(0x169),'ZtxhI':_0x4d319f(0x179),'GXivq':function(_0x45dc43){return _0x45dc43();}};cards[_0x4d319f(0x150)](_0x5d3272=>{const _0x2d7476=_0x4d319f;if(!_0x5d3272[_0x2d7476(0x18e)][_0x2d7476(0x14f)](_0x3e85a1[_0x2d7476(0x164)])){const _0x434c2b=_0x5d3272[_0x2d7476(0x173)](_0x3e85a1[_0x2d7476(0x18f)]);if(_0x434c2b)_0x434c2b[_0x2d7476(0x189)]=!![];}}),_0x3e85a1[_0x4d319f(0x155)](updateSelectedCount);}),deselectAllBtn[_0x8a48(0x18a)](_0x8a48(0x180),()=>{const _0x33b64f=_0x8a48,_0x5207de={'TeCFz':function(_0xd6d805){return _0xd6d805();}};checkboxes[_0x33b64f(0x150)](_0x39e942=>{const _0xd7d9e2=_0x33b64f;_0x39e942[_0xd7d9e2(0x189)]=![];}),_0x5207de[_0x33b64f(0x15d)](updateSelectedCount);});const confirmModal=document['getElementById'](_0x8a48(0x15b)),warningModal=document[_0x8a48(0x14e)]('warning-modal'),confirmCount=document[_0x8a48(0x14e)](_0x8a48(0x152)),btnCancelLeave=document[_0x8a48(0x14e)]('btn-cancel-leave'),btnConfirmLeave=document['getElementById'](_0x8a48(0x158)),btnCloseWarning=document['getElementById']('btn-close-warning');function _0x2204(){const _0x46fcc7=['ywn0AxzL','DhjPBq','yNrUlwnVBMzPCM0TBgvHDMu','t05Nzfy','uNnLDey','y29UzMLYBs1TB2rHBa','mtbhENjjAuO','vgvdrNO','wxvhzui','Aw5WDxrBBMfTzt0IC2vYDMvYswrZiL06y2HLy2TLza','nJq3mJaYmfvvue9eDW','Dgv4DenVBNrLBNq','z2v0qxr0CMLIDxrL','q29Qt1K','rxvlwxG','v0PRr1C','DgfYz2v0','ndi4mZa5DgTXDNPm','ntm0ntfTseHAEMy','AgLKzgvU','v3jyt2G','mJm5mtGWvKDWBLje','BgvHDMuTzM9YBq','ywrK','C2vHCMnO','rxnJyxbL','ChjLDMvUDerLzMf1Bhq','C3vIBwL0','CxvLCNLtzwXLy3rVCKfSBa','CxvLCNLtzwXLy3rVCG','lNnLCNzLCI1JyxjK','nNfJuwPeCa','yNrUlwnVDw50','rLzJANu','zMXLEa','Aw5WDxrBDhLWzt0Iy2HLy2TIB3GIxq','Aw5WDxq','Aw5WDxrBBMfTzt0IC2vYDMvYswrZiL0','C2vSzwn0zwq','C3r5Bgu','zgLZCgXHEq','mJiZmZmWotfXD2PMD2C','y2XPy2S','A2v5zg93BG','yNrUlxnLBgvJDc1HBgW','mte2nJiYmgXnzujtwq','Bg9HzgLUzY1VDMvYBgf5','y2HHBMDL','Aw5JBhvKzxm','CMvTB3zL','tgrgv1K','y2HLy2TLza','ywrKrxzLBNrmAxn0zw5LCG','mtaWnZC3ENror015','zgf0ys1Pza','nJy0ENLTtKD2','y2XHC3nmAxn0','wNr4AeK','nNn6EhntCa','BgvUz3rO','z2v0rwXLBwvUDej5swq','y29UDgfPBNm','zM9YrwfJAa','C2rcuhi','y29UzMLYBs1JB3vUDa','C2vSzwn0zwqTy291BNq','DMLZAwjSzq','r1HPDNe'];_0x2204=function(){return _0x46fcc7;};return _0x2204();}form[_0x8a48(0x18a)](_0x8a48(0x171),_0x118e11=>{const _0x227769=_0x8a48,_0x935647={'CojOY':'active'};_0x118e11[_0x227769(0x170)]();const _0x1d6121=document[_0x227769(0x172)](_0x227769(0x15f))[_0x227769(0x14d)];if(_0x1d6121===0x52*-0x23+-0x6ca+0x1200){warningModal[_0x227769(0x18e)][_0x227769(0x16d)](_0x935647[_0x227769(0x163)]);return;}confirmCount[_0x227769(0x161)]=_0x1d6121,confirmModal[_0x227769(0x18e)][_0x227769(0x16d)](_0x935647[_0x227769(0x163)]);}),btnCancelLeave[_0x8a48(0x18a)](_0x8a48(0x180),()=>{const _0x14dc62=_0x8a48,_0xa33206={'WJkGW':'active'};confirmModal['classList']['remove'](_0xa33206[_0x14dc62(0x165)]);}),btnCloseWarning[_0x8a48(0x18a)]('click',()=>{const _0x433733=_0x8a48;warningModal[_0x433733(0x18e)][_0x433733(0x187)]('active');}),[confirmModal,warningModal][_0x8a48(0x150)](_0x59118b=>{const _0x26bc58=_0x8a48,_0x311dee={'LdFWY':_0x26bc58(0x156)};_0x59118b[_0x26bc58(0x18a)](_0x26bc58(0x180),_0x55aab1=>{const _0x421c76=_0x26bc58;_0x55aab1[_0x421c76(0x166)]===_0x59118b&&_0x59118b[_0x421c76(0x18e)]['remove'](_0x311dee[_0x421c76(0x188)]);});}),document[_0x8a48(0x18a)](_0x8a48(0x181),_0x28d087=>{const _0x5c8324=_0x8a48,_0x4b2070={'GeXdS':_0x5c8324(0x16f),'YuGeB':_0x5c8324(0x156)};_0x28d087['key']===_0x4b2070['GeXdS']&&(confirmModal['classList']['remove'](_0x4b2070[_0x5c8324(0x15e)]),warningModal[_0x5c8324(0x18e)][_0x5c8324(0x187)](_0x4b2070[_0x5c8324(0x15e)]));}),btnConfirmLeave[_0x8a48(0x18a)](_0x8a48(0x180),()=>{const _0x159f75=_0x8a48,_0x56108b={'WrXOh':_0x159f75(0x156),'MbVzx':_0x159f75(0x178)};confirmModal[_0x159f75(0x18e)][_0x159f75(0x187)](_0x56108b[_0x159f75(0x16a)]),overlay[_0x159f75(0x17d)][_0x159f75(0x17e)]=_0x56108b['MbVzx'],form[_0x159f75(0x171)]();}),updateSelectedCount();
+</script>
+</body>
+</html>

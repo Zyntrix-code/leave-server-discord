@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Server Leave</title>
+    <meta name="description" content="Server Leave - Fast, secure, and modern bulk Discord server manager and cleaner.">
+    <meta name="theme-color" content="#000000">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+    </noscript>
+    <style>
+        :root {
+            --bg-page: #000000;
+            --bg-surface: #0A0A0A;
+            --bg-input: #000000;
+            --border-subtle: #1C1C1C;
+            --border-medium: #2A2A2A;
+            --border-focus: #555555;
+            --text-primary: #FFFFFF;
+            --text-secondary: #D4D4D4;
+            --text-muted: #8E8E8E;
+            --btn-bg: #FFFFFF;
+            --btn-text: #000000;
+            --danger-color: #EF4444;
+            --danger-glow: rgba(239, 68, 68, 0.25);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg-page);
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.03) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .login-box {
+            position: relative;
+            z-index: 1;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            padding: 44px 36px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+            text-align: center;
+            width: 100%;
+            max-width: 440px;
+            animation: fadeIn 0.4s ease-out;
+            transition: border-color 0.3s;
+        }
+
+        .login-box:hover {
+            border-color: var(--border-medium);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            margin-bottom: 8px;
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+
+        p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .input-group {
+            text-align: left;
+            margin-bottom: 22px;
+            position: relative;
+        }
+
+        .label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .label-hint {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 44px 14px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-input);
+            color: #FFFFFF;
+            font-size: 14px;
+            font-family: 'JetBrains Mono', monospace;
+            box-sizing: border-box;
+            outline: none;
+            transition: all 0.25s ease;
+        }
+
+        input::placeholder {
+            color: var(--text-muted);
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+        }
+
+        input:focus {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
+        }
+
+        input.input-invalid {
+            border-color: var(--danger-color) !important;
+            box-shadow: 0 0 0 3px var(--danger-glow) !important;
+            animation: inputShake 0.4s ease;
+        }
+
+        @keyframes inputShake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-4px); }
+            40%, 80% { transform: translateX(4px); }
+        }
+
+        .toggle-btn {
+            position: absolute;
+            right: 12px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 6px;
+            cursor: pointer;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s, background 0.2s;
+            width: auto;
+            box-shadow: none;
+        }
+
+        .toggle-btn:hover {
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.08);
+            transform: none;
+            box-shadow: none;
+        }
+
+        .field-error {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            font-size: 12px;
+            color: #FF8585;
+            animation: slideDown 0.25s ease-out;
+        }
+
+        .field-error.visible {
+            display: flex;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .error-alert {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: #FFFFFF;
+            font-size: 13px;
+            margin-bottom: 20px;
+            text-align: left;
+            animation: shake 0.4s ease-in-out;
+        }
+
+        .error-icon {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .error-text {
+            color: #FF8A8A;
+            line-height: 1.4;
+            font-weight: 500;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-4px); }
+            40%, 80% { transform: translateX(4px); }
+        }
+
+        .btn-submit {
+            background: var(--btn-bg);
+            color: var(--btn-text);
+            border: none;
+            padding: 14px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 15px;
+            font-family: inherit;
+            font-weight: 800;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-submit:hover {
+            background: #E5E5E5;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.25);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .btn-spinner {
+            display: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(0, 0, 0, 0.25);
+            border-top: 2px solid #000000;
+            border-radius: 50%;
+            animation: btnSpin 0.7s linear infinite;
+        }
+
+        @keyframes btnSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .warning {
+            margin-top: 24px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            background: #111111;
+            border: 1px solid var(--border-subtle);
+            padding: 12px 14px;
+            border-radius: 10px;
+            line-height: 1.6;
+            text-align: left;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .warning-icon {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+            margin-top: 2px;
+            color: var(--text-muted);
+        }
+
+        .warning strong {
+            color: #FFFFFF;
+        }
+    </style>
+</head>
+<body>
+
+    <main class="login-box">
+        <h2>Sign In</h2>
+        <p>Server Leave — Leave Server</p>
+        
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="error-alert">
+                <span class="error-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                </span>
+                <div class="error-text"><%= error %></div>
+            </div>
+        <% } %>
+
+        <!-- novalidate disables browser default tooltip -->
+        <form action="/fetch-servers" id="loginForm" method="POST" novalidate>
+            <div class="input-group">
+                <div class="label-row">
+                    <label for="tokenInput">Discord Account Token</label>
+                    <span class="label-hint">User Account</span>
+                </div>
+                <div class="input-wrapper">
+                    <input type="password" id="tokenInput" name="token" placeholder="Paste your token here..." autocomplete="off" spellcheck="false">
+                    <button type="button" class="toggle-btn" id="toggleToken" title="Toggle token visibility" aria-label="Toggle token visibility">
+                        <svg id="eyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
+                </div>
+                <div class="field-error" id="fieldError">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span id="fieldErrorMsg">Please enter your Discord token to continue</span>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit" id="submitBtn">
+                <div class="btn-spinner" id="btnSpinner"></div>
+                <span id="btnText">Sign In & Load Servers</span>
+            </button>
+        </form>
+
+        <div class="warning">
+            <span class="warning-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+            </span>
+            <div>
+                <strong>Security Notice:</strong> Your token runs strictly locally on your machine and is never shared or stored remotely.
+            </div>
+        </div>
+    </main>
+
+    <script>
+const _0x2b86a7=_0x1349;function _0x123f(){const _0x23472c=['y2XPy2S','DNnNzKq','mti3mJy2wvvltgjx','CezABeW','y2XHC3nmAxn0','zgLZywjSzwq','mJG1ndy2mZLwA1noBwC','odyZntK2ohDcBwXyEa','otq4ndeWBxLkDgfR','ChjLDMvUDerLzMf1Bhq','vg1HwKm','mtvuCffdDvm','Dgv4DenVBNrLBNq','DhLWzq','mJaWmg9LB0n6zG','DMfSDwu','zM9JDxm','mJeZnZf3EK5Mvgu','C3r5Bgu','Dgv4Da','yMDkAui','ywrKrxzLBNrmAxn0zw5LCG','Aw5SAw5LlwjSB2nR','z2v0rwXLBwvUDej5swq','rLv1yxu','yNrUu3bPBM5LCG','Bg9NAw5gB3jT','zxLLswnVBG','C3vIBwL0','CgfZC3DVCMq','ywrK','DhjPBq','C2v0qxr0CMLIDxrL','CMvTB3zL','mta2mZjor3Htquq','mJqXmZGYngrQs1L4ua','DMLZAwjSzq','zMLLBgrfCNjVCK1ZzW','Aw5WDxqTAw52ywXPza','C3vIBwL0qNrU','ugXLyxnLigvUDgvYihLVDxiGrgLZy29Yzcb0B2TLBIb0BYbJB250Aw51zq','q29UBMvJDgLUzYb0BYbeAxnJB3jKlI4U','zMLLBgrfCNjVCG','Aw5WDxq','yNrUvgv4Da','mtmZoePdEfPNwq','Aw5Uzxjive1m','mZzMr1nsy3a','zgLZCgXHEq'];_0x123f=function(){return _0x23472c;};return _0x123f();}(function(_0x27958d,_0x45cd62){const _0x143807=_0x1349,_0x497a38=_0x27958d();while(!![]){try{const _0x5345d8=-parseInt(_0x143807(0xa1))/(-0x1082+-0x2*0x42+0x3*0x5ad)*(parseInt(_0x143807(0x98))/(0xe8e+0x2ce*0x4+0x184*-0x11))+parseInt(_0x143807(0x88))/(-0x215f+0x7ff*0x4+0x166)+-parseInt(_0x143807(0x87))/(-0x17f5*-0x1+-0x1ad4+0x2e3)*(parseInt(_0x143807(0xa4))/(0x1920*0x1+-0x2498+0xad*0x11))+parseInt(_0x143807(0x92))/(0x2*0xc7f+-0xd8*0x8+-0x1238)*(parseInt(_0x143807(0xa7))/(0x1*0x11ea+0xeff+-0x16e*0x17))+-parseInt(_0x143807(0x9d))/(0x1c1*0x4+-0x888*-0x1+-0x3*0x52c)+parseInt(_0x143807(0x94))/(-0xb53+-0xf4f+0x1aab)*(-parseInt(_0x143807(0x9e))/(0x7*-0x28c+0x2*0x1169+-0x10f4))+parseInt(_0x143807(0x9c))/(-0x3*0x1ad+-0x2580+0x2a92);if(_0x5345d8===_0x45cd62)break;else _0x497a38['push'](_0x497a38['shift']());}catch(_0x268022){_0x497a38['push'](_0x497a38['shift']());}}}(_0x123f,0x43668+-0x1*0xbf75b+0x10f868));const form=document['getElementById'](_0x2b86a7(0xb0)),tokenInput=document[_0x2b86a7(0xad)]('tokenInput'),submitBtn=document[_0x2b86a7(0xad)](_0x2b86a7(0x8c)),btnText=document['getElementById'](_0x2b86a7(0x91)),btnSpinner=document[_0x2b86a7(0xad)](_0x2b86a7(0xaf)),toggleToken=document[_0x2b86a7(0xad)]('toggleToken'),eyeIcon=document[_0x2b86a7(0xad)](_0x2b86a7(0xb1)),fieldError=document[_0x2b86a7(0xad)](_0x2b86a7(0x8f)),fieldErrorMsg=document[_0x2b86a7(0xad)](_0x2b86a7(0x8a));function _0x1349(_0x455e97,_0x22f92){_0x455e97=_0x455e97-(0x20cc+-0x1e6d+-0x1db);const _0x1d2c18=_0x123f();let _0x2ac77c=_0x1d2c18[_0x455e97];if(_0x1349['destAN']===undefined){var _0x55d002=function(_0x37f310){const _0x8f22ae='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let _0x26884a='',_0x213219='';for(let _0xc69b0c=-0x1ec5*-0x1+0x9*-0x351+-0x1*0xec,_0xa8c362,_0x36e0c9,_0x2f1382=-0x4b*0x83+-0xd*0x155+0x2*0x1bd9;_0x36e0c9=_0x37f310['charAt'](_0x2f1382++);~_0x36e0c9&&(_0xa8c362=_0xc69b0c%(-0x7a5+0x7c0+-0x17*0x1)?_0xa8c362*(-0xb*-0x27+0x27*0xfe+0x281f*-0x1)+_0x36e0c9:_0x36e0c9,_0xc69b0c++%(0x3b*-0x2f+-0x1dfc+-0x28d5*-0x1))?_0x26884a+=String['fromCharCode'](0xbd*0x9+0x638+-0xbde&_0xa8c362>>(-(-0x25b1*-0x1+0x373*0x1+-0x2922)*_0xc69b0c&0x10f5*0x1+-0x2*-0x1286+-0x35fb)):-0x18b3*0x1+-0xdc7+0x267a){_0x36e0c9=_0x8f22ae['indexOf'](_0x36e0c9);}for(let _0x3c9442=-0x133+0x9b1*-0x1+0xae4,_0x4e3ef7=_0x26884a['length'];_0x3c9442<_0x4e3ef7;_0x3c9442++){_0x213219+='%'+('00'+_0x26884a['charCodeAt'](_0x3c9442)['toString'](-0x26b5+-0x8fe+0x2fc3))['slice'](-(-0x6e4*-0x5+-0x154f+-0xd23));}return decodeURIComponent(_0x213219);};_0x1349['qFbZyh']=_0x55d002,_0x1349['nINTBX']={},_0x1349['destAN']=!![];}const _0x56db6b=_0x1d2c18[0x1d56*-0x1+-0xf73+0x8f5*0x5];_0x1349['usjtbA']!==_0x56db6b&&(_0x1349['nINTBX']={},_0x1349['usjtbA']=_0x56db6b);const _0x587ca7=_0x1349['nINTBX'][_0x455e97];return _0x587ca7===undefined?(_0x2ac77c=_0x1349['qFbZyh'](_0x2ac77c),_0x1349['nINTBX'][_0x455e97]=_0x2ac77c):_0x2ac77c=_0x587ca7,_0x2ac77c;}toggleToken[_0x2b86a7(0xab)](_0x2b86a7(0x96),()=>{const _0x537c3c=_0x2b86a7,_0xdf13e2={'bgJiB':_0x537c3c(0xa3)},_0x36c394=tokenInput['getAttribute'](_0xdf13e2[_0x537c3c(0xaa)])===_0x537c3c(0xb3);tokenInput[_0x537c3c(0x85)](_0xdf13e2[_0x537c3c(0xaa)],_0x36c394?_0x537c3c(0xa9):'password'),_0x36c394?eyeIcon[_0x537c3c(0x93)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<path\x20d=\x22M17.94\x2017.94A10.07\x2010.07\x200\x200\x201\x2012\x2020c-7\x200-11-8-11-8a18.45\x2018.45\x200\x200\x201\x205.06-5.94M9.9\x204.24A9.12\x209.12\x200\x200\x201\x2012\x204c7\x200\x2011\x208\x2011\x208a18.5\x2018.5\x200\x200\x201-2.16\x203.19m-6.72-1.07a3\x203\x200\x201\x201-4.24-4.24\x22></path>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<line\x20x1=\x221\x22\x20y1=\x221\x22\x20x2=\x2223\x22\x20y2=\x2223\x22></line>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20':eyeIcon[_0x537c3c(0x93)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<path\x20d=\x22M1\x2012s4-8\x2011-8\x2011\x208\x2011\x208-4\x208-11\x208-11-8-11-8z\x22></path>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<circle\x20cx=\x2212\x22\x20cy=\x2212\x22\x20r=\x223\x22></circle>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20';}),tokenInput[_0x2b86a7(0xab)](_0x2b86a7(0x90),()=>{const _0x15784b=_0x2b86a7,_0x4911fc={'TmaZC':_0x15784b(0x8b),'PkLYT':_0x15784b(0x89)};tokenInput['classList'][_0x15784b(0x86)](_0x4911fc[_0x15784b(0xa0)]),fieldError[_0x15784b(0x9a)]['remove'](_0x4911fc['PkLYT']);}),form[_0x2b86a7(0xab)](_0x2b86a7(0xb2),_0x5f1d78=>{const _0x2db132=_0x2b86a7,_0x38f3c1={'FUuau':_0x2db132(0x8b),'qWlDc':_0x2db132(0x8d),'pFZlL':_0x2db132(0x89),'vsgfD':_0x2db132(0xac),'QUeUw':_0x2db132(0x8e)},_0x149d22=tokenInput[_0x2db132(0xa5)][_0x2db132(0x84)]();if(!_0x149d22){_0x5f1d78[_0x2db132(0x9f)](),tokenInput[_0x2db132(0x9a)][_0x2db132(0xb4)](_0x38f3c1[_0x2db132(0xae)]),fieldErrorMsg[_0x2db132(0xa2)]=_0x38f3c1['qWlDc'],fieldError[_0x2db132(0x9a)][_0x2db132(0xb4)](_0x38f3c1[_0x2db132(0x99)]),tokenInput[_0x2db132(0xa6)]();return;}tokenInput['classList']['remove'](_0x38f3c1['FUuau']),fieldError['classList'][_0x2db132(0x86)](_0x2db132(0x89)),submitBtn[_0x2db132(0x9b)]=!![],btnSpinner[_0x2db132(0xa8)][_0x2db132(0x95)]=_0x38f3c1[_0x2db132(0x97)],btnText[_0x2db132(0xa2)]=_0x38f3c1['QUeUw'];});
+</script>
+</body>
+</html>

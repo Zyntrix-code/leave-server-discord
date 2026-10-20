@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status | Server Leave</title>
+    <meta name="description" content="Server Leave - Status and summary breakdown of left Discord servers.">
+    <meta name="theme-color" content="#000000">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+    </noscript>
+    <style>
+        :root {
+            --bg-page: #000000;
+            --bg-surface: #0A0A0A;
+            --border-subtle: #1C1C1C;
+            --border-medium: #2A2A2A;
+            --border-highlight: #404040;
+            --text-primary: #FFFFFF;
+            --text-secondary: #D4D4D4;
+            --text-muted: #8E8E8E;
+            --btn-bg: #FFFFFF;
+            --btn-text: #000000;
+            --success-color: #22C55E;
+            --success-glow: rgba(34, 197, 94, 0.2);
+            --danger-color: #EF4444;
+            --danger-glow: rgba(239, 68, 68, 0.2);
+            --warning-color: #EAB308;
+            --warning-glow: rgba(234, 179, 8, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body { 
+            font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+            background: var(--bg-page); 
+            color: var(--text-primary); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0;
+            padding: 24px 16px;
+        }
+
+        .status-box { 
+            background: var(--bg-surface); 
+            border: 1px solid var(--border-subtle);
+            padding: 38px 30px; 
+            border-radius: 22px; 
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.95); 
+            text-align: center; 
+            width: 100%;
+            max-width: 520px;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .status-icon-wrap {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 18px;
+            transition: transform 0.2s;
+        }
+
+        .status-icon-wrap.success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.4);
+            box-shadow: 0 0 30px var(--success-glow);
+        }
+
+        .status-icon-wrap.partial {
+            background: rgba(234, 179, 8, 0.1);
+            border: 1px solid rgba(234, 179, 8, 0.4);
+            box-shadow: 0 0 30px var(--warning-glow);
+        }
+
+        .status-icon-wrap.danger {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            box-shadow: 0 0 30px var(--danger-glow);
+        }
+
+        h2 { 
+            font-size: 22px; 
+            font-weight: 800; 
+            color: var(--text-primary); 
+            margin-bottom: 8px;
+            letter-spacing: -0.3px;
+        }
+
+        .status-desc { 
+            color: var(--text-secondary); 
+            font-size: 14px; 
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #111111;
+            border: 1px solid var(--border-subtle);
+            padding: 14px 16px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-card.stat-success {
+            border-color: rgba(34, 197, 94, 0.25);
+            background: rgba(34, 197, 94, 0.04);
+        }
+
+        .stat-card.stat-failed {
+            border-color: rgba(239, 68, 68, 0.25);
+            background: rgba(239, 68, 68, 0.04);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .stat-val {
+            font-size: 24px;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-val.success { color: var(--success-color); }
+        .stat-val.failed { color: var(--danger-color); }
+
+        .remaining-pill {
+            display: inline-block;
+            background: #121212;
+            border: 1px solid var(--border-medium);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+        .remaining-pill span {
+            color: #FFFFFF;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+        }
+
+        /* Failed Servers Breakdown */
+        .failed-section {
+            text-align: left;
+            margin-bottom: 24px;
+        }
+
+        .failed-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .failed-header-title {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .failed-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 220px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .failed-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .failed-list::-webkit-scrollbar-thumb {
+            background: #2A2A2A;
+            border-radius: 3px;
+        }
+
+        .failed-item {
+            background: #111111;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 10px;
+            padding: 12px 14px;
+            transition: all 0.2s;
+        }
+
+        .failed-item-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .failed-server-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #FFFFFF;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .failed-badge {
+            font-size: 10px;
+            font-weight: 700;
+            color: #FFA5A5;
+            background: rgba(239, 68, 68, 0.2);
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            flex-shrink: 0;
+        }
+
+        .failed-reason {
+            font-size: 12px;
+            color: #FF8585;
+            line-height: 1.4;
+        }
+
+        /* Buttons */
+        .actions-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn-home {
+            display: block;
+            text-decoration: none;
+            background: var(--btn-bg);
+            color: var(--btn-text);
+            padding: 14px 20px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 15px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-home:hover {
+            background: #E5E5E5;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.25);
+        }
+
+        .btn-signout {
+            color: var(--text-muted);
+            font-size: 13px;
+            text-decoration: none;
+            padding: 6px;
+            transition: color 0.2s;
+        }
+
+        .btn-signout:hover {
+            color: #FFFFFF;
+        }
+    </style>
+</head>
+<body>
+
+    <main class="status-box">
+        <% 
+            const hasFailed = (typeof failedCount !== 'undefined' && failedCount > 0);
+            const hasSuccess = (typeof successfulCount !== 'undefined' && successfulCount > 0);
+        %>
+
+        <% if (!hasFailed && hasSuccess) { %>
+            <!-- All Succeeded -->
+            <div class="status-icon-wrap success">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+            </div>
+            <h2>Operation Completed</h2>
+            <p class="status-desc">All selected servers were left successfully without errors.</p>
+
+        <% } else if (hasFailed && hasSuccess) { %>
+            <!-- Partial Success -->
+            <div class="status-icon-wrap partial">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#EAB308" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+            </div>
+            <h2>Partially Completed</h2>
+            <p class="status-desc">Left <%= successfulCount %> server(s), but <%= failedCount %> server(s) could not be left.</p>
+
+        <% } else if (hasFailed && !hasSuccess) { %>
+            <!-- All Failed -->
+            <div class="status-icon-wrap danger">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+            </div>
+            <h2>Unable to Leave Server(s)</h2>
+            <p class="status-desc">None of the selected servers could be left due to restrictions.</p>
+
+        <% } else { %>
+            <!-- Fallback general message -->
+            <div class="status-icon-wrap success">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+            </div>
+            <h2>Operation Status</h2>
+            <p class="status-desc"><%= typeof message !== 'undefined' ? message : 'Operation processed.' %></p>
+        <% } %>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card stat-success">
+                <div class="stat-label">Successful</div>
+                <div class="stat-val success"><%= typeof successfulCount !== 'undefined' ? successfulCount : 0 %></div>
+            </div>
+            <div class="stat-card stat-failed">
+                <div class="stat-label">Failed</div>
+                <div class="stat-val failed"><%= typeof failedCount !== 'undefined' ? failedCount : 0 %></div>
+            </div>
+        </div>
+
+        <% if (typeof remainingCount !== 'undefined') { %>
+            <div class="remaining-pill">
+                Remaining in Account: <span><%= remainingCount %></span> servers
+            </div>
+        <% } %>
+
+        <!-- Failed Servers List with Specific Reasons -->
+        <% if (typeof failedList !== 'undefined' && failedList.length > 0) { %>
+            <div class="failed-section">
+                <div class="failed-header">
+                    <div class="failed-header-title">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        <span>Failed Servers Details</span>
+                    </div>
+                    <span style="color: var(--text-muted);"><%= failedList.length %> server(s)</span>
+                </div>
+                <div class="failed-list">
+                    <% failedList.forEach(item => { %>
+                        <div class="failed-item">
+                            <div class="failed-item-top">
+                                <span class="failed-server-name" title="<%= item.name %>"><%= item.name %></span>
+                                <span class="failed-badge">Not Left</span>
+                            </div>
+                            <div class="failed-reason">
+                                <strong>Reason:</strong> <%= item.reason %>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            </div>
+        <% } %>
+
+        <div class="actions-wrap">
+            <a href="/dashboard" class="btn-home">Back to Dashboard</a>
+            <a href="/" class="btn-signout">Sign Out / Switch Token</a>
+        </div>
+    </main>
+
+</body>
+</html>

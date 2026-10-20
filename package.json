@@ -1,0 +1,25 @@
+{
+  "name": "l-server",
+  "version": "1.0.0",
+  "description": "This tool use to leave servers fast and secure , fast , modern",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    ""
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "body-parser": "^2.2.2",
+    "compression": "^1.8.2",
+    "discord.js-selfbot-v13": "^3.7.1",
+    "ejs": "^4.0.1",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "javascript-obfuscator": "^5.9.0"
+  }
+}
